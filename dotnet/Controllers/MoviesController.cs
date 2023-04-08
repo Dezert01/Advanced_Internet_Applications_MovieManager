@@ -160,6 +160,7 @@ public class MoviesController : ControllerBase {
         return "OK";
     }
 
+    // T1.1
     [HttpPost("{id}/GetGenres")]
     public List<string> GetGenres(int id) {
         MoviesContext dbContext = new MoviesContext();
@@ -178,6 +179,7 @@ public class MoviesController : ControllerBase {
         }
     }
 
+    // T1.2
     [HttpPost("{id}/GetGenresVector")]
     public int[] GetGenresVector(int id) {
         MoviesContext dbContext = new MoviesContext();
@@ -195,6 +197,57 @@ public class MoviesController : ControllerBase {
             return genres;
         } else {
             return new int[allGenres.Count];
+        }
+    }
+
+    // T1.3
+    [HttpPost("GetMoviesSimilarity/{id1}/{id2}")]
+    public double GetMoviesSimilarity(int id1, int id2) {
+        MoviesContext dbContext = new MoviesContext();
+        Movie movie1 = dbContext.Movies.FirstOrDefault(e => e.MovieID == id1);
+        Movie movie2 = dbContext.Movies.FirstOrDefault(e => e.MovieID == id2);
+        if (movie1 != null && movie2 != null) {
+            dbContext.Entry(movie1)
+                .Collection(m => m.Genres)
+                .Load();
+            dbContext.Entry(movie2)
+                .Collection(m => m.Genres)
+                .Load();
+
+            List<int> allGenres = dbContext.Genres.Select(g => g.GenreID).ToList();
+
+            int[] m1Genres = new int[allGenres.Count];
+            int[] m2Genres = new int[allGenres.Count];
+
+            foreach (Genre genre in movie1.Genres) {
+                int index = allGenres.IndexOf(genre.GenreID);
+                if (index >= 0) {
+                    m1Genres[index] = 1;
+                }
+            }
+
+            foreach (Genre genre in movie2.Genres) {
+                int index = allGenres.IndexOf(genre.GenreID);
+                if (index >= 0) {
+                    m2Genres[index] = 1;
+                }
+            }
+
+            double dotProduct = 0;
+            double normM1 = 0;
+            double normM2 = 0;
+
+            for (int i = 0; i < allGenres.Count; i++) {
+                dotProduct += m1Genres[i] * m2Genres[i];
+                normM1 += m1Genres[i] * m1Genres[i];
+                normM2 += m2Genres[i] * m2Genres[i];
+            }
+
+            double similarity = dotProduct / (Math.Sqrt(normM1) * Math.Sqrt(normM2));
+
+            return similarity;
+        } else {
+            return 0;
         }
     }
 }
