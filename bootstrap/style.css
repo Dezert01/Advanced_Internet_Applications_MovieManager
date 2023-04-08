@@ -1,0 +1,17 @@
+.badge-gray {
+    color: gray;
+    border: 1px solid gray;
+}
+.badge-delete {
+    text-decoration: none;
+    color: #ffffff;
+    background-color: #dc3545;
+    height: 100%;
+    padding: 0 0.25rem;
+    margin-left: 0.25rem!important;
+    border-radius: 1000vh;
+}
+.badge-delete:hover {
+    color: #ffffff;
+    background-color: #bb2d3b;
+}
