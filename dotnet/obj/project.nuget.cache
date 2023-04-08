@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "RxS+YRLlLuBZ+mP9Hi4Pgf5al5laCw3GQTHMAzDUsWhKR/nWq/g0lhDnMr9vNOke3NLVQWvv+mB6bbuv96PBCQ==",
+  "dgSpecHash": "Pvol5D64RfmWGqqy0eLDHpfTRq/VKFe4T7SAnexXWvOVTYKGFXFpbCTFGgwXgBBPOazDZj8eNgVI3eRG39AqWw==",
   "success": true,
-  "projectFilePath": "C:\\GIT\\adv-dotnet\\adv-dotnet.csproj",
+  "projectFilePath": "C:\\GIT\\adv\\dotnet\\adv-dotnet.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Kuba\\.nuget\\packages\\google.protobuf\\3.21.9\\google.protobuf.3.21.9.nupkg.sha512",
     "C:\\Users\\Kuba\\.nuget\\packages\\k4os.compression.lz4\\1.2.6\\k4os.compression.lz4.1.2.6.nupkg.sha512",

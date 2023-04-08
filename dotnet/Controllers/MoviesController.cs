@@ -14,7 +14,7 @@ public class MoviesController : ControllerBase {
         strm.Close();
 
         bool skip_header = true;
-        foreach(string line in fileContent.Split('\n')) {
+        foreach(string line in fileContent.Split('\r')) {
             if(skip_header) {
                 skip_header =false;
                 continue;
@@ -43,17 +43,20 @@ public class MoviesController : ControllerBase {
             
             string[] Genres = tokens[tokens.Length - 1].Split("|");
             List<Genre> movieGenres = new List<Genre>();
-            foreach(string genre in Genres) {
-                Genre g = new Genre();
-                g.Name = genre;
-                if(!dbContext.Genres.Any(e => e.Name == g.Name)) {
-                    dbContext.Genres.Add(g);
-                    dbContext.SaveChanges();
+            if(Genres.Length > 0 && Genres[0] != "(no genres listed)") {
+                foreach(string genre in Genres) {
+                    Genre g = new Genre();
+                    g.Name = genre;
+                    if(!dbContext.Genres.Any(e => e.Name == g.Name)) {
+                        dbContext.Genres.Add(g);
+                        dbContext.SaveChanges();
+                    }
+                    IQueryable<Genre> results = dbContext.Genres.Where(e => e.Name == g.Name);
+                    if(results.Count() > 0) {
+                        movieGenres.Add(results.First());
+                    }
                 }
-                IQueryable<Genre> results = dbContext.Genres.Where(e => e.Name == g.Name);
-                if(results.Count() > 0)
-                movieGenres.Add(results.First());
-            }
+            } 
             Movie m = new Movie();
             m.MovieID = int.Parse(MovieID);
             m.Title = MovieName;
@@ -157,11 +160,21 @@ public class MoviesController : ControllerBase {
         return "OK";
     }
 
-    // [HttpPost("FindUser/{id}")]
-    // public User FindUser(int id) {
-    //     MoviesContext dbContext = new MoviesContext();
-    //     return dbContext.Users.Where(e => e.UserID == id).First();
-
-
-    // }
+    [HttpPost("GetMovieGenres/{id}")]
+    public List<string> GetMovieGenres(int id) {
+        MoviesContext dbContext = new MoviesContext();
+        Movie movie = dbContext.Movies.FirstOrDefault(e => e.MovieID == id);
+        if (movie != null) {
+             dbContext.Entry(movie)
+                .Collection(m => m.Genres)
+                .Load();
+            List<string> genres = new List<string>();
+            foreach (Genre genre in movie.Genres) {
+                genres.Add(genre.Name);
+            }
+            return genres;
+        } else {
+            return new List<string>();
+        }
+    }
 }
