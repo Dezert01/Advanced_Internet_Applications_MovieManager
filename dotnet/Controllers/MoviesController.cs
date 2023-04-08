@@ -160,8 +160,8 @@ public class MoviesController : ControllerBase {
         return "OK";
     }
 
-    [HttpPost("GetMovieGenres/{id}")]
-    public List<string> GetMovieGenres(int id) {
+    [HttpPost("{id}/GetGenres")]
+    public List<string> GetGenres(int id) {
         MoviesContext dbContext = new MoviesContext();
         Movie movie = dbContext.Movies.FirstOrDefault(e => e.MovieID == id);
         if (movie != null) {
@@ -175,6 +175,26 @@ public class MoviesController : ControllerBase {
             return genres;
         } else {
             return new List<string>();
+        }
+    }
+
+    [HttpPost("{id}/GetGenresVector")]
+    public int[] GetGenresVector(int id) {
+        MoviesContext dbContext = new MoviesContext();
+        List<Genre> allGenres = dbContext.Genres.ToList();
+        Movie movie = dbContext.Movies.FirstOrDefault(e => e.MovieID == id);
+        if (movie != null) {
+            dbContext.Entry(movie)
+                .Collection(m => m.Genres)
+                .Load();
+            int[] genres = new int[allGenres.Count];
+            foreach (Genre genre in movie.Genres) {
+                int genreIndex = allGenres.FindIndex(g => g.GenreID == genre.GenreID);
+                genres[genreIndex] = 1;
+            }
+            return genres;
+        } else {
+            return new int[allGenres.Count];
         }
     }
 }
