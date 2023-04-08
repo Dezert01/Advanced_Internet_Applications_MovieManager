@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "PccbQqIsFO2uKIHaMvHGnTKaLe01fTP4QnD1aNRSHV0=",
+  "Source": "adv-dotnet",
+  "BasePath": "_content/adv-dotnet",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
