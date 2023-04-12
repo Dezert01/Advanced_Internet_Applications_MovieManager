@@ -248,20 +248,6 @@ public class MoviesController : ControllerBase {
                 }
             }
 
-            // double dotProduct = 0;
-            // double normM1 = 0;
-            // double normM2 = 0;
-
-            // for (int i = 0; i < allGenres.Count; i++) {
-            //     dotProduct += m1Genres[i] * m2Genres[i];
-            //     normM1 += m1Genres[i] * m1Genres[i];
-            //     normM2 += m2Genres[i] * m2Genres[i];
-            // }
-
-            // double similarity = dotProduct / (Math.Sqrt(normM1) * Math.Sqrt(normM2));
-
-            // return similarity;
-
             return CalculateCosineSimilarity(m1Genres, m2Genres);
         } else {
             return 0;
@@ -482,5 +468,47 @@ public class MoviesController : ControllerBase {
         }
 
         return recommendationList;
+    }
+
+
+    // T2
+    [HttpGet("GetSortedRatingsOfMoviesRatedByUser/{id}")]
+    public List<string> GetSortedRatingsOfMoviesRatedByUser(int id) {
+        MoviesContext dbContext = new MoviesContext();
+        List<string> ratingValues = dbContext.Ratings
+            .Where(r => r.RatingUser.UserID == id && r.RatedMovie != null)
+            .OrderByDescending(r => r.RatingValue)
+            .Select(r => r.RatingValue)
+            .ToList();
+        return ratingValues;
+    }
+
+    [HttpGet("GetSortedMoviesRatedByUserddsadas/{id}")]
+    public List<int> GetSortedMoviesRatedByUserddsadas(int id) {
+        MoviesContext dbContext = new MoviesContext();
+        List<int> ratedMovieIds = dbContext.Ratings
+            .Where(r => r.RatingUser.UserID == id && r.RatedMovie != null)
+            .OrderByDescending(r => r.RatingValue)
+            .Select(r => r.RatedMovie.MovieID)
+            .ToList();
+        return ratedMovieIds;
+    }
+
+    [HttpGet("GetRecommendationH2/user/{id}")]
+    public List<string> GetRecommendationH2(int id) {
+        MoviesContext dbContext = new MoviesContext();
+        
+        List<string> ratingValues = dbContext.Ratings
+            .Where(r => r.RatingUser.UserID == id && r.RatedMovie != null)
+            .OrderByDescending(r => r.RatingValue)
+            .Select(r => r.RatingValue)
+            .ToList();
+
+        List<int> ratedMovieIds = dbContext.Ratings
+            .Where(r => r.RatingUser.UserID == id && r.RatedMovie != null)
+            .OrderByDescending(r => r.RatingValue)
+            .Select(r => r.RatedMovie.MovieID)
+            .ToList();
+
     }
 }
