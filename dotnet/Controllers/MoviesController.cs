@@ -161,21 +161,38 @@ public class MoviesController : ControllerBase {
     }
 
     // T1.1
+    // [HttpGet("{id}/GetGenres")]
+    // public List<string> GetGenres(int id) {
+    //     MoviesContext dbContext = new MoviesContext();
+    //     Movie movie = dbContext.Movies.FirstOrDefault(e => e.MovieID == id);
+    //     if (movie != null) {
+    //          dbContext.Entry(movie)
+    //             .Collection(m => m.Genres)
+    //             .Load();
+    //         List<string> genres = new List<string>();
+    //         foreach (Genre genre in movie.Genres) {
+    //             genres.Add(genre.Name);
+    //         }
+    //         return genres;
+    //     } else {
+    //         return new List<string>();
+    //     }
+    // }
     [HttpGet("{id}/GetGenres")]
-    public List<string> GetGenres(int id) {
+    public IEnumerable<Genre> GetGenres(int id) {
         MoviesContext dbContext = new MoviesContext();
         Movie movie = dbContext.Movies.FirstOrDefault(e => e.MovieID == id);
         if (movie != null) {
-             dbContext.Entry(movie)
+            dbContext.Entry(movie)
                 .Collection(m => m.Genres)
                 .Load();
-            List<string> genres = new List<string>();
+            List<Genre> genres = new List<Genre>();
             foreach (Genre genre in movie.Genres) {
-                genres.Add(genre.Name);
+                genres.Add(genre);
             }
             return genres;
         } else {
-            return new List<string>();
+            return new List<Genre>();
         }
     }
 
@@ -275,13 +292,62 @@ public class MoviesController : ControllerBase {
     }
 
     //T1.5
+    // [HttpGet("{id}/GetSimilarMoviesCosine/{threshold}")]
+    // public List<string> GetSimilarMoviesCosine(int id, double threshold) {
+    //     MoviesContext dbContext = new MoviesContext();
+    //     Movie movie = dbContext.Movies.FirstOrDefault(e => e.MovieID == id);
+
+    //     if (movie == null) {
+    //         return new List<string>();
+    //     }
+    
+    //     List<int> allGenres = dbContext.Genres.Select(g => g.GenreID).ToList();
+    //     int[] movieGenres = new int[allGenres.Count];
+
+    //     dbContext.Entry(movie)
+    //         .Collection(m => m.Genres)
+    //         .Load();
+
+    //     foreach (Genre genre in movie.Genres) {
+    //         int index = allGenres.IndexOf(genre.GenreID);
+    //         if (index >= 0) {
+    //             movieGenres[index] = 1;
+    //         }
+    //     }
+
+    //     IEnumerable<Movie> allMovies = dbContext.Movies.ToList();
+    //     List<string> similarMovies = new List<string>();
+    //     foreach (Movie otherMovie in allMovies) {
+    //         if (otherMovie.MovieID == id) {
+    //             continue;
+    //         }
+    //         if (otherMovie == null) {
+    //             continue;
+    //         }
+    //         dbContext.Entry(otherMovie)
+    //             .Collection(m => m.Genres)
+    //             .Load();
+    //         int[] otherGenres = new int[allGenres.Count];
+    //         foreach (Genre otherGenre in otherMovie.Genres) {
+    //             int index = allGenres.IndexOf(otherGenre.GenreID);
+    //             if (index >= 0) {
+    //                 otherGenres[index] = 1;
+    //             }
+    //         }
+    //         double similarity = CalculateCosineSimilarity(movieGenres, otherGenres);
+    //         if (similarity >= threshold) {
+    //             similarMovies.Add(otherMovie.Title);
+    //         }
+    //     }
+    //     return similarMovies;
+    // }  
     [HttpGet("{id}/GetSimilarMoviesCosine/{threshold}")]
-    public List<string> GetSimilarMoviesCosine(int id, double threshold) {
+    public List<Movie> GetSimilarMoviesCosine(int id, double threshold) {
         MoviesContext dbContext = new MoviesContext();
         Movie movie = dbContext.Movies.FirstOrDefault(e => e.MovieID == id);
 
         if (movie == null) {
-            return new List<string>();
+            return new List<Movie>();
         }
     
         List<int> allGenres = dbContext.Genres.Select(g => g.GenreID).ToList();
@@ -299,7 +365,7 @@ public class MoviesController : ControllerBase {
         }
 
         IEnumerable<Movie> allMovies = dbContext.Movies.ToList();
-        List<string> similarMovies = new List<string>();
+        List<Movie> similarMovies = new List<Movie>();
         foreach (Movie otherMovie in allMovies) {
             if (otherMovie.MovieID == id) {
                 continue;
@@ -319,11 +385,11 @@ public class MoviesController : ControllerBase {
             }
             double similarity = CalculateCosineSimilarity(movieGenres, otherGenres);
             if (similarity >= threshold) {
-                similarMovies.Add(otherMovie.Title);
+                similarMovies.Add(otherMovie);
             }
         }
         return similarMovies;
-    }    
+    }      
 
     //T1.6
     [HttpGet("GetMoviesRatedByUser/{id}")]
@@ -350,8 +416,64 @@ public class MoviesController : ControllerBase {
     }
 
     //T1.8
+    // [HttpGet("GetSimilarToHighestRated/{id}/{threshold}")]
+    // public List<string> GetSimilarToHighestRated(int id, double threshold) {
+    //     MoviesContext dbContext = new MoviesContext();
+    //     List<Movie> ratedMovies = dbContext.Ratings
+    //         .Where(r => r.RatingUser.UserID == id && r.RatedMovie != null)
+    //         .OrderByDescending(r => r.RatingValue)
+    //         .Select(r => r.RatedMovie)
+    //         .ToList();
+
+    //     Movie movie = ratedMovies.FirstOrDefault();
+
+    //     // Movie movie = dbContext.Movies.FirstOrDefault(e => e.MovieID == highestRated.MovieID);
+    //     if (movie == null) {
+    //         return new List<string>();
+    //     }
+
+    //     List<int> allGenres = dbContext.Genres.Select(g => g.GenreID).ToList();
+    //     int[] movieGenres = new int[allGenres.Count];
+
+    //     dbContext.Entry(movie)
+    //         .Collection(m => m.Genres)
+    //         .Load();
+
+    //     foreach (Genre genre in movie.Genres) {
+    //         int index = allGenres.IndexOf(genre.GenreID);
+    //         if (index >= 0) {
+    //             movieGenres[index] = 1;
+    //         }
+    //     }
+
+    //     IEnumerable<Movie> allMovies = dbContext.Movies.ToList();
+    //     List<string> similarMovies = new List<string>();
+    //     foreach (Movie otherMovie in allMovies) {
+    //         if (otherMovie.MovieID == id) {
+    //             continue;
+    //         }
+    //         if (otherMovie == null) {
+    //             continue;
+    //         }
+    //         dbContext.Entry(otherMovie)
+    //             .Collection(m => m.Genres)
+    //             .Load();
+    //         int[] otherGenres = new int[allGenres.Count];
+    //         foreach (Genre otherGenre in otherMovie.Genres) {
+    //             int index = allGenres.IndexOf(otherGenre.GenreID);
+    //             if (index >= 0) {
+    //                 otherGenres[index] = 1;
+    //             }
+    //         }
+    //         double similarity = CalculateCosineSimilarity(movieGenres, otherGenres);
+    //         if (similarity >= threshold) {
+    //             similarMovies.Add(otherMovie.Title);
+    //         }
+    //     }
+    //     return similarMovies;
+    // }
     [HttpGet("GetSimilarToHighestRated/{id}/{threshold}")]
-    public List<string> GetSimilarToHighestRated(int id, double threshold) {
+    public List<Movie> GetSimilarToHighestRated(int id, double threshold) {
         MoviesContext dbContext = new MoviesContext();
         List<Movie> ratedMovies = dbContext.Ratings
             .Where(r => r.RatingUser.UserID == id && r.RatedMovie != null)
@@ -363,7 +485,7 @@ public class MoviesController : ControllerBase {
 
         // Movie movie = dbContext.Movies.FirstOrDefault(e => e.MovieID == highestRated.MovieID);
         if (movie == null) {
-            return new List<string>();
+            return new List<Movie>();
         }
 
         List<int> allGenres = dbContext.Genres.Select(g => g.GenreID).ToList();
@@ -381,7 +503,7 @@ public class MoviesController : ControllerBase {
         }
 
         IEnumerable<Movie> allMovies = dbContext.Movies.ToList();
-        List<string> similarMovies = new List<string>();
+        List<Movie> similarMovies = new List<Movie>();
         foreach (Movie otherMovie in allMovies) {
             if (otherMovie.MovieID == id) {
                 continue;
@@ -401,7 +523,7 @@ public class MoviesController : ControllerBase {
             }
             double similarity = CalculateCosineSimilarity(movieGenres, otherGenres);
             if (similarity >= threshold) {
-                similarMovies.Add(otherMovie.Title);
+                similarMovies.Add(otherMovie);
             }
         }
         return similarMovies;
@@ -409,7 +531,7 @@ public class MoviesController : ControllerBase {
 
     //T1.9
     [HttpGet("GetRecommendationList/{id}/{threshold}/{size}")]
-    public List<string> GetRecommendationList(int id, double threshold, int size) {
+    public List<Movie> GetRecommendationList(int id, double threshold, int size) {
         MoviesContext dbContext = new MoviesContext();
 
         Movie highestRatedMovie = dbContext.Ratings
@@ -419,7 +541,7 @@ public class MoviesController : ControllerBase {
             .FirstOrDefault();
 
         if (highestRatedMovie == null) {
-            return new List<string>();
+            return new List<Movie>();
         }
 
         List<int> allGenres = dbContext.Genres.Select(g => g.GenreID).ToList();
@@ -440,7 +562,7 @@ public class MoviesController : ControllerBase {
             .Where(m => !dbContext.Ratings.Any(r => r.RatingUser.UserID == id && r.RatedMovie.MovieID == m.MovieID))
             .ToList();
 
-        List<string> recommendationList = new List<string>();
+        List<Movie> recommendationList = new List<Movie>();
         foreach (Movie movie in notRatedMovies) {
             if (recommendationList.Count >= size) {
                 break;
@@ -463,7 +585,7 @@ public class MoviesController : ControllerBase {
             }
             double similarity = CalculateCosineSimilarity(movieGenres, otherGenres);
             if (similarity >= threshold) {
-                recommendationList.Add(movie.Title);
+                recommendationList.Add(movie);
             }
         }
 
@@ -494,21 +616,21 @@ public class MoviesController : ControllerBase {
         return ratedMovieIds;
     }
 
-    [HttpGet("GetRecommendationH2/user/{id}")]
-    public List<string> GetRecommendationH2(int id) {
-        MoviesContext dbContext = new MoviesContext();
+    // [HttpGet("GetRecommendationH2/user/{id}")]
+    // public List<string> GetRecommendationH2(int id) {
+    //     MoviesContext dbContext = new MoviesContext();
         
-        List<string> ratingValues = dbContext.Ratings
-            .Where(r => r.RatingUser.UserID == id && r.RatedMovie != null)
-            .OrderByDescending(r => r.RatingValue)
-            .Select(r => r.RatingValue)
-            .ToList();
+    //     List<string> ratingValues = dbContext.Ratings
+    //         .Where(r => r.RatingUser.UserID == id && r.RatedMovie != null)
+    //         .OrderByDescending(r => r.RatingValue)
+    //         .Select(r => r.RatingValue)
+    //         .ToList();
 
-        List<int> ratedMovieIds = dbContext.Ratings
-            .Where(r => r.RatingUser.UserID == id && r.RatedMovie != null)
-            .OrderByDescending(r => r.RatingValue)
-            .Select(r => r.RatedMovie.MovieID)
-            .ToList();
+    //     List<int> ratedMovieIds = dbContext.Ratings
+    //         .Where(r => r.RatingUser.UserID == id && r.RatedMovie != null)
+    //         .OrderByDescending(r => r.RatingValue)
+    //         .Select(r => r.RatedMovie.MovieID)
+    //         .ToList();
 
-    }
+    // }
 }

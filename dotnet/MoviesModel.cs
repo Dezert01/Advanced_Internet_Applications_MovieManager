@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using MySql.EntityFrameworkCore.Extensions;
+using System.Text.Json.Serialization;
 namespace adv_dotnet {
     public class Movie {
         public int MovieID {get; set;}
         public string? Title {get;set;}
+        [JsonIgnore]
         public virtual ICollection<Genre> Genres{get; set;}
     }
     public class Genre {
