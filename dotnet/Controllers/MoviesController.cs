@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
+using Microsoft.EntityFrameworkCore;
 namespace adv_dotnet.Controllers;
 [ApiController]
 [Route("[controller]")]
@@ -162,23 +163,6 @@ public class MoviesController : ControllerBase {
     }
 
     // T1.1
-    // [HttpGet("{id}/GetGenres")]
-    // public List<string> GetGenres(int id) {
-    //     MoviesContext dbContext = new MoviesContext();
-    //     Movie movie = dbContext.Movies.FirstOrDefault(e => e.MovieID == id);
-    //     if (movie != null) {
-    //          dbContext.Entry(movie)
-    //             .Collection(m => m.Genres)
-    //             .Load();
-    //         List<string> genres = new List<string>();
-    //         foreach (Genre genre in movie.Genres) {
-    //             genres.Add(genre.Name);
-    //         }
-    //         return genres;
-    //     } else {
-    //         return new List<string>();
-    //     }
-    // }
     [HttpGet("{id}/GetGenres")]
     public IEnumerable<Genre> GetGenres(int id) {
         MoviesContext dbContext = new MoviesContext();
@@ -307,55 +291,6 @@ public class MoviesController : ControllerBase {
     }
 
     //T1.5
-    // [HttpGet("{id}/GetSimilarMoviesCosine/{threshold}")]
-    // public List<string> GetSimilarMoviesCosine(int id, double threshold) {
-    //     MoviesContext dbContext = new MoviesContext();
-    //     Movie movie = dbContext.Movies.FirstOrDefault(e => e.MovieID == id);
-
-    //     if (movie == null) {
-    //         return new List<string>();
-    //     }
-    
-    //     List<int> allGenres = dbContext.Genres.Select(g => g.GenreID).ToList();
-    //     int[] movieGenres = new int[allGenres.Count];
-
-    //     dbContext.Entry(movie)
-    //         .Collection(m => m.Genres)
-    //         .Load();
-
-    //     foreach (Genre genre in movie.Genres) {
-    //         int index = allGenres.IndexOf(genre.GenreID);
-    //         if (index >= 0) {
-    //             movieGenres[index] = 1;
-    //         }
-    //     }
-
-    //     IEnumerable<Movie> allMovies = dbContext.Movies.ToList();
-    //     List<string> similarMovies = new List<string>();
-    //     foreach (Movie otherMovie in allMovies) {
-    //         if (otherMovie.MovieID == id) {
-    //             continue;
-    //         }
-    //         if (otherMovie == null) {
-    //             continue;
-    //         }
-    //         dbContext.Entry(otherMovie)
-    //             .Collection(m => m.Genres)
-    //             .Load();
-    //         int[] otherGenres = new int[allGenres.Count];
-    //         foreach (Genre otherGenre in otherMovie.Genres) {
-    //             int index = allGenres.IndexOf(otherGenre.GenreID);
-    //             if (index >= 0) {
-    //                 otherGenres[index] = 1;
-    //             }
-    //         }
-    //         double similarity = CalculateCosineSimilarity(movieGenres, otherGenres);
-    //         if (similarity >= threshold) {
-    //             similarMovies.Add(otherMovie.Title);
-    //         }
-    //     }
-    //     return similarMovies;
-    // }  
     [HttpGet("{id}/GetSimilarMoviesCosine/{threshold}")]
     public List<Movie> GetSimilarMoviesCosine(int id, double threshold) {
         MoviesContext dbContext = new MoviesContext();
@@ -431,62 +366,6 @@ public class MoviesController : ControllerBase {
     }
 
     //T1.8
-    // [HttpGet("GetSimilarToHighestRated/{id}/{threshold}")]
-    // public List<string> GetSimilarToHighestRated(int id, double threshold) {
-    //     MoviesContext dbContext = new MoviesContext();
-    //     List<Movie> ratedMovies = dbContext.Ratings
-    //         .Where(r => r.RatingUser.UserID == id && r.RatedMovie != null)
-    //         .OrderByDescending(r => r.RatingValue)
-    //         .Select(r => r.RatedMovie)
-    //         .ToList();
-
-    //     Movie movie = ratedMovies.FirstOrDefault();
-
-    //     // Movie movie = dbContext.Movies.FirstOrDefault(e => e.MovieID == highestRated.MovieID);
-    //     if (movie == null) {
-    //         return new List<string>();
-    //     }
-
-    //     List<int> allGenres = dbContext.Genres.Select(g => g.GenreID).ToList();
-    //     int[] movieGenres = new int[allGenres.Count];
-
-    //     dbContext.Entry(movie)
-    //         .Collection(m => m.Genres)
-    //         .Load();
-
-    //     foreach (Genre genre in movie.Genres) {
-    //         int index = allGenres.IndexOf(genre.GenreID);
-    //         if (index >= 0) {
-    //             movieGenres[index] = 1;
-    //         }
-    //     }
-
-    //     IEnumerable<Movie> allMovies = dbContext.Movies.ToList();
-    //     List<string> similarMovies = new List<string>();
-    //     foreach (Movie otherMovie in allMovies) {
-    //         if (otherMovie.MovieID == id) {
-    //             continue;
-    //         }
-    //         if (otherMovie == null) {
-    //             continue;
-    //         }
-    //         dbContext.Entry(otherMovie)
-    //             .Collection(m => m.Genres)
-    //             .Load();
-    //         int[] otherGenres = new int[allGenres.Count];
-    //         foreach (Genre otherGenre in otherMovie.Genres) {
-    //             int index = allGenres.IndexOf(otherGenre.GenreID);
-    //             if (index >= 0) {
-    //                 otherGenres[index] = 1;
-    //             }
-    //         }
-    //         double similarity = CalculateCosineSimilarity(movieGenres, otherGenres);
-    //         if (similarity >= threshold) {
-    //             similarMovies.Add(otherMovie.Title);
-    //         }
-    //     }
-    //     return similarMovies;
-    // }
     [HttpGet("GetSimilarToHighestRated/{id}/{threshold}")]
     public List<Movie> GetSimilarToHighestRated(int id, double threshold) {
         MoviesContext dbContext = new MoviesContext();
@@ -697,6 +576,71 @@ public class MoviesController : ControllerBase {
                     recommendationList.Add(movie);
                     break;
                 }
+            }
+        }
+
+        return recommendationList;
+    }
+
+    //T3 We get a list From T2. Then we get cosine similarity from T1 comarping highest rated movie of given user and each movie from T2. We got different threshold for user similarity and movie similarity. We also have a size of recommendation List
+    [HttpGet("GetRecommendationH3/user/{id}/{thresholdUser}/{thresholdMovie}/{size}")]
+    public List<Movie> GetRecommendationH2(int id, double thresholdUser, double thresholdMovie, int size) {
+        MoviesContext dbContext = new MoviesContext();
+
+        List<Movie> movies = GetRecommendationH2(id, thresholdUser);
+
+        Movie highestRatedMovie = dbContext.Ratings
+            .Where(r => r.RatingUser.UserID == id && r.RatedMovie != null)
+            .OrderByDescending(r => r.RatingValue)
+            .Select(r => r.RatedMovie)
+            .FirstOrDefault();
+
+        if (highestRatedMovie == null) {
+            return new List<Movie>();
+        }
+
+        List<int> allGenres = dbContext.Genres.Select(g => g.GenreID).ToList();
+        int[] movieGenres = new int[allGenres.Count];
+
+        dbContext.Entry(highestRatedMovie)
+            .Collection(m => m.Genres)
+            .Load();
+
+        foreach (Genre genre in highestRatedMovie.Genres) {
+            int index = allGenres.IndexOf(genre.GenreID);
+            if (index >= 0) {
+                movieGenres[index] = 1;
+            }
+        }
+
+        List<Movie> recommendationList = new List<Movie>();
+        foreach (Movie movie in movies) {
+            if (recommendationList.Count >= size) {
+                break;
+            }
+            if (movie.MovieID == highestRatedMovie.MovieID) {
+                continue;
+            }
+            if (movie == null) {
+                continue;
+            }
+            // We do that to include genres as we don't have them in GetRecommendationH2.
+            // The other way to achieve is that we create new list of Movies of ids that are in "List<Movie> movies = GetRecommendationH2(id, thresholdUser);" But this way is faster :)
+            dbContext.Entry(movie)
+                .State = EntityState.Modified;
+            dbContext.Entry(movie)
+                .Collection(m => m.Genres)
+                .Load();
+            int[] otherGenres = new int[allGenres.Count];
+            foreach (Genre otherGenre in movie.Genres) {
+                int index = allGenres.IndexOf(otherGenre.GenreID);
+                if (index >= 0) {
+                    otherGenres[index] = 1;
+                }
+            }
+            double similarity = CalculateCosineSimilarity(movieGenres, otherGenres);
+            if (similarity >= thresholdMovie) {
+                recommendationList.Add(movie);
             }
         }
 
