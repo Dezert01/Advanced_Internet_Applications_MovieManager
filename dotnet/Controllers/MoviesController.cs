@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 namespace adv_dotnet.Controllers;
 [ApiController]
 [Route("[controller]")]
@@ -218,6 +219,20 @@ public class MoviesController : ControllerBase {
     }
 
     private double CalculateCosineSimilarity(int[] vec1, int[] vec2) {
+        double dotProduct = 0;
+        double mag1 = 0;
+        double mag2 = 0;
+        for (int i = 0; i < vec1.Length; i++) {
+            dotProduct += vec1[i] * vec2[i];
+            mag1 += vec1[i] * vec1[i];
+            mag2 += vec2[i] * vec2[i];
+        }
+        mag1 = Math.Sqrt(mag1);
+        mag2 = Math.Sqrt(mag2);
+        return dotProduct / (mag1 * mag2);
+    }
+
+    private double CalculateCosineSimilarityDouble(double[] vec1, double[] vec2) {
         double dotProduct = 0;
         double mag1 = 0;
         double mag2 = 0;
@@ -594,43 +609,97 @@ public class MoviesController : ControllerBase {
 
 
     // T2
-    [HttpGet("GetSortedRatingsOfMoviesRatedByUser/{id}")]
-    public List<string> GetSortedRatingsOfMoviesRatedByUser(int id) {
-        MoviesContext dbContext = new MoviesContext();
-        List<string> ratingValues = dbContext.Ratings
-            .Where(r => r.RatingUser.UserID == id && r.RatedMovie != null)
-            .OrderByDescending(r => r.RatingValue)
-            .Select(r => r.RatingValue)
-            .ToList();
-        return ratingValues;
-    }
-
-    [HttpGet("GetSortedMoviesRatedByUserddsadas/{id}")]
-    public List<int> GetSortedMoviesRatedByUserddsadas(int id) {
-        MoviesContext dbContext = new MoviesContext();
-        List<int> ratedMovieIds = dbContext.Ratings
-            .Where(r => r.RatingUser.UserID == id && r.RatedMovie != null)
-            .OrderByDescending(r => r.RatingValue)
-            .Select(r => r.RatedMovie.MovieID)
-            .ToList();
-        return ratedMovieIds;
-    }
-
-    // [HttpGet("GetRecommendationH2/user/{id}")]
-    // public List<string> GetRecommendationH2(int id) {
+    // [HttpGet("GetSortedRatingsOfMoviesRatedByUser/{id}")]
+    // public List<string> GetSortedRatingsOfMoviesRatedByUser(int id) {
     //     MoviesContext dbContext = new MoviesContext();
-        
     //     List<string> ratingValues = dbContext.Ratings
     //         .Where(r => r.RatingUser.UserID == id && r.RatedMovie != null)
     //         .OrderByDescending(r => r.RatingValue)
     //         .Select(r => r.RatingValue)
     //         .ToList();
+    //     return ratingValues;
+    // }
 
+    // [HttpGet("GetSortedMoviesRatedByUserddsadas/{id}")]
+    // public List<int> GetSortedMoviesRatedByUserddsadas(int id) {
+    //     MoviesContext dbContext = new MoviesContext();
     //     List<int> ratedMovieIds = dbContext.Ratings
     //         .Where(r => r.RatingUser.UserID == id && r.RatedMovie != null)
     //         .OrderByDescending(r => r.RatingValue)
     //         .Select(r => r.RatedMovie.MovieID)
     //         .ToList();
-
+    //     return ratedMovieIds;
     // }
+
+    [HttpGet("GetRecommendationH2/user/{id}/{threshold}")]
+    public List<Movie> GetRecommendationH2(int id, double threshold) {
+        MoviesContext dbContext = new MoviesContext();
+
+
+        // Get all rating values of movies rated by given user
+        List<string> ratingValuesString = dbContext.Ratings
+            .Where(r => r.RatingUser.UserID == id && r.RatedMovie != null)
+            .OrderByDescending(r => r.RatingValue)
+            .Select(r => r.RatingValue)
+            .ToList();
+
+        // Convert string to Double
+        List<double> ratingValues = ratingValuesString.Select(s => Double.Parse(s, CultureInfo.InvariantCulture)).ToList();
+
+        // Get move Ids of above ratings
+        List<int> ratedMovieIds = dbContext.Ratings
+            .Where(r => r.RatingUser.UserID == id && r.RatedMovie != null)
+            .OrderByDescending(r => r.RatingValue)
+            .Select(r => r.RatedMovie.MovieID)
+            .ToList();
+
+        IEnumerable<User> allUsers = dbContext.Users.ToList();
+        List<User> similarUsers = new List<User>();
+        foreach (User otherUser in allUsers) {
+            if (otherUser.UserID == id) {
+                continue;
+            }
+            if (otherUser == null) {
+                continue;
+            }
+
+            List<double> otherRatingValues = new List<double>();
+            var ratings = dbContext.Ratings.Where(r => r.RatingUser.UserID == otherUser.UserID && r.RatedMovie != null);
+
+            // We loop through movies of our given user and check if other user has rated the movie or not. The result of that loop is vector of rating values
+            foreach(var movieId in ratedMovieIds) {
+                var rating = dbContext.Ratings.FirstOrDefault(r => r.RatingUser.UserID == otherUser.UserID && r.RatedMovie.MovieID == movieId);
+                double ratingValue = rating != null ? Double.Parse(rating.RatingValue, CultureInfo.InvariantCulture) : 0.0;
+                otherRatingValues.Add(ratingValue);
+            }
+
+            // get the Cosine Similarity
+            double similarity = CalculateCosineSimilarityDouble(ratingValues.ToArray(), otherRatingValues.ToArray());
+
+            if (similarity >= threshold) {
+                similarUsers.Add(otherUser);
+            }
+        }
+
+
+        
+        List<Movie> recommendationList = new List<Movie>();
+        // Loop through Similar Users we got above and get the highest rated movie from each User. If our given User has rated the movie we don't add it.
+        foreach (User user in similarUsers) {
+            List <Movie> ratedMovies = dbContext.Ratings
+                .Where(r => r.RatingUser.UserID == user.UserID && r.RatedMovie != null)
+                .OrderByDescending(r => r.RatingValue)
+                .Select(r => r.RatedMovie)
+                .ToList();
+
+            foreach (Movie movie in ratedMovies) {
+                if (!ratedMovieIds.Contains(movie.MovieID) && !recommendationList.Contains(movie)) {
+                    recommendationList.Add(movie);
+                    break;
+                }
+            }
+        }
+
+        return recommendationList;
+    }
 }
