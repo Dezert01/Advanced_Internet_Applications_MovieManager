@@ -34,6 +34,13 @@
 
 from django.views import generic
 from .models import Movie, Genre
+from django.contrib.auth import login, logout, authenticate
+from .forms import NewUserForm
+from django.shortcuts import render
+from django.contrib import messages
+from django.shortcuts import redirect
+from django.contrib.auth.forms import AuthenticationForm
+
 
 class IndexView(generic.ListView):
     paginate_by = 1
@@ -47,3 +54,42 @@ class MovieView(generic.DetailView):
 class GenreView(generic.DetailView):
     model = Genre
     template_name = 'userview/genre.html'
+
+
+def register_request(request):
+    form = NewUserForm()
+
+    if request.method == "POST":
+        form = NewUserForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, "Registration successful.")
+            return redirect("index")
+        messages.error(request, "Unsuccessful registration. Invalid information.")
+
+    return render (request=request,  template_name="userview/register.html", context={"register_form":form})
+
+def login_request(request):
+
+    if request.method == "POST":
+        # form = NewUserForm(request.POST)
+        form = AuthenticationForm(request, data=request.POST)
+        print("test")
+        if form.is_valid():
+            print('123')
+            # user = form.save()
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+
+            user = authenticate(username=username, password=password)
+
+            if user is not None:
+                login(request, user)
+
+            messages.success(request, "Login successful.")
+            return redirect("index")
+        messages.error(request, "Unsuccessful login. Invalid information.")
+    
+    form = AuthenticationForm()
+    return render (request=request,  template_name="userview/login.html", context={"login_form":form})
