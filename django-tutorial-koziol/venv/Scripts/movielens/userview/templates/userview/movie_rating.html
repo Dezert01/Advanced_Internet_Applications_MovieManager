@@ -1,0 +1,23 @@
+{% if user.is_authenticated %}
+    <p>Welcome, {{ user.username }}!</p>
+    <ul>
+        {% for movie in movies %}
+            <li>{{ movie.title }}: {{ movie.rating.value }}</li>
+        {% endfor %}
+    </ul>
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="movie_id" value="{{ movie.id }}">
+        <label for="rating_value">Rate this movie:</label>
+        <select name="rating_value" id="rating_value">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+        <button type="submit">Submit rating</button>
+    </form>
+{% else %}
+    <p>You need to log in to see this content.</p>
+{% endif %}
