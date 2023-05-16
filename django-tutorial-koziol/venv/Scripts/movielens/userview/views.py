@@ -49,13 +49,13 @@ class IndexView(generic.ListView):
 
     def dispatch(self, request):
         if self.request.user.is_anonymous:
-            print("AAAAAAAAAAAAAAAAAAAAAAAA")
+            # print("AAAAAAAAAAAAAAAAAAAAAAAA")
             return redirect('login')
         return super().dispatch(request)
 
     def get_queryset(self):
         user = self.request.user
-        print(user)
+        # print(user)
         rated_movies = Rating.objects.filter(user=user).select_related('movie')
         return [rating.movie for rating in rated_movies]
 class MovieView(generic.DetailView):
