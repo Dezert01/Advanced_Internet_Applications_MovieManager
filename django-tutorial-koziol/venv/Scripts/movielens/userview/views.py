@@ -41,14 +41,21 @@ from django.contrib import messages
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
 
-
+# @login_required
 class IndexView(generic.ListView):
     template_name = 'userview/index.html'
     context_object_name = 'movies'
     paginate_by = 10
 
+    def dispatch(self, request):
+        if self.request.user.is_anonymous:
+            print("AAAAAAAAAAAAAAAAAAAAAAAA")
+            return redirect('login')
+        return super().dispatch(request)
+
     def get_queryset(self):
         user = self.request.user
+        print(user)
         rated_movies = Rating.objects.filter(user=user).select_related('movie')
         return [rating.movie for rating in rated_movies]
 class MovieView(generic.DetailView):
@@ -140,5 +147,4 @@ def movie_rating(request):
             }
             return redirect("index")
     else:
-        print('asd')
         return redirect("index")
