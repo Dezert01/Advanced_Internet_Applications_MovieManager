@@ -11,5 +11,5 @@ urlpatterns = [
     path("register", views.register_request, name="register"),
     path("login", views.login_request, name="login"),
     path("logout", views.logout_request, name="logout"),
-    path("movie_rating", views.movie_rating, name="movie_rating"),
+    path("rated", views.RatedView.as_view(), name="rated"),
 ]

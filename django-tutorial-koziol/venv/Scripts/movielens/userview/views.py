@@ -47,23 +47,38 @@ class IndexView(generic.ListView):
     context_object_name = 'movies'
     paginate_by = 10
 
-    def dispatch(self, request):
-        if self.request.user.is_anonymous:
-            # print("AAAAAAAAAAAAAAAAAAAAAAAA")
-            return redirect('login')
-        return super().dispatch(request)
-
     def get_queryset(self):
-        user = self.request.user
+        # user = self.request.user
         # print(user)
-        rated_movies = Rating.objects.filter(user=user).select_related('movie')
-        return [rating.movie for rating in rated_movies]
+        # rated_movies = Rating.objects.filter(user=user).select_related('movie')
+        # return [rating.movie for rating in rated_movies]
+        return Movie.objects.order_by('-title')
 class MovieView(generic.DetailView):
     model = Movie
     template_name = 'userview/movie.html'
 class GenreView(generic.DetailView):
     model = Genre
     template_name = 'userview/genre.html'
+
+class RatedView(generic.ListView):
+    template_name = 'userview/rated.html'
+    context_object_name = 'movies'
+    paginate_by = 10
+
+    # def dispatch(self, request):
+    #     if self.request.user.is_anonymous:
+    #         # print("AAAAAAAAAAAAAAAAAAAAAAAA")
+    #         return redirect('login')
+    #     return super().dispatch(request)
+
+    def get_queryset(self):
+        user = self.request.user
+        if self.request.user.is_anonymous:
+            return []
+        print(user)
+        rated_movies = Rating.objects.filter(user=user).select_related('movie')
+        return [rating.movie for rating in rated_movies]
+        # return Movie.objects.order_by('-title')
 
 
 def register_request(request):
@@ -141,10 +156,10 @@ def movie_rating(request):
             message = ''
 
             # Render the template with the list of movies and a message (if any)
-            context = {
-                'movies': movies,
-                'message': message,
-            }
+            # context = {
+            #     'movies': movies,
+            #     'message': message,
+            # }
             return redirect("index")
     else:
         return redirect("index")

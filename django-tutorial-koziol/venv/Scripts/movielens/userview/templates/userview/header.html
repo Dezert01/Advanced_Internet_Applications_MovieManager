@@ -15,14 +15,19 @@
 
 <body>
   <header>
-    <!-- place navbar here -->
+    <nav class="nav justify-content-center  ">
+      <a class="nav-link active" href="/login" aria-current="page">Login</a>
+      <a class="nav-link" href="/register">Register</a>
+      <a class="nav-link" href="/logout">Logout</a>
+    </nav>
   </header>
   <main>
     {% block content %}
+
     {% endblock %}
   </main>
-  <footer>
-    <!-- place footer here -->
+  <footer class="fixed-bottom text-center text-bg-dark p-2">
+    <p class="mb-0">Najlepsza stronka @ 2023</p>
   </footer>
   <!-- Bootstrap JavaScript Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
