@@ -4,7 +4,7 @@
         {% if movies %}
         <div class="list-group">
             {% for movie in movies %}
-            <a href="/movie/{{movie.id}}" class="list-group-item list-group-item-action">{{ movie.title }}</a>
+                <a href='{% url "movie" movie.id %}' class="list-group-item list-group-item-action">{{ movie.title }}</a>
             {% endfor %}
         </div>
         {% else %}

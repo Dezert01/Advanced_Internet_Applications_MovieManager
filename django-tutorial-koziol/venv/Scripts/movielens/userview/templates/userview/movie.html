@@ -1,27 +1,35 @@
 {% extends "userview/header.html" %}
 
 {% block content %}
+    {% if movie %}
         <div class="card">
             <div class="card-body">
                 {% if movie.title %}
                 <h4 class="card-title">{{ movie.title }}</h4>
                 {% endif %}
                 <p class="card-text">Display some movie info here</p>
+                {% if user.is_authenticated %}
 
-                <form method="post" action="{% url 'movie' %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="movie_id" value="{{ movie.id }}">
-                    <label for="rating_value">Rate this movie:</label>
-                    <select name="rating_value" id="rating_value">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                    </select>
-                    <button type="submit" class="btn btn-primary">Submit rating</button>
-                </form>
+                    <form method="post" action="{% url 'movie' movie.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="movie_id" value="{{ movie.id }}">
+                        <label for="rating_value">Rate this movie:</label>
+                        <select name="rating_value" id="rating_value">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary">Submit rating</button>
+                    </form>
+                {% endif %}    
                 <p>Movie ID: {{ movie.id }}</p>
+                <p>Average ranking: {{ movie.average_rating }}</p>
+                {% if movie.images.all %}
+                    <img class='w-100' src="{{ movie.images.first.image.url }}" alt="First Image">
+                {% endif %}
             </div>
         </div>
+    {% endif %}
 {% endblock %}

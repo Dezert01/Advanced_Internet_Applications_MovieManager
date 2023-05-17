@@ -1,37 +1,3 @@
-# from django.shortcuts import render, get_object_or_404
-# from django.http import HttpRequest, HttpResponse
-# from django.template import loader
-# from .models import Movie, Genre
-
-# def index(request : HttpRequest):
-#     movies = Movie.objects.order_by('-title')
-#     template = loader.get_template('userview/index.html')
-#     context = {
-#         'movies' : movies
-#     }
-#     return HttpResponse(template.render(context,request))
-
-# def view_movie(request: HttpRequest, movie_id):
-
-#     template = loader.get_template('userview/movie.html')
-#     movie = get_object_or_404(Movie, id=movie_id)
-#     context = {
-#         'title': movie.title
-#     }
-#     return HttpResponse(template.render(context,request))
-
-# def view_genre(request: HttpRequest, genre_id):
-
-#     template = loader.get_template('userview/genre.html')
-#     genre = get_object_or_404(Genre, id=genre_id)
-
-#     context = {
-#         'name': genre.name
-#     }
-
-#     return HttpResponse(template.render(context,request))
-
-
 from django.views import generic
 from .models import Movie, Genre, Rating
 from django.contrib.auth import login, logout, authenticate
@@ -41,21 +7,34 @@ from django.contrib import messages
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
 
-# @login_required
 class IndexView(generic.ListView):
     template_name = 'userview/index.html'
     context_object_name = 'movies'
     paginate_by = 10
+    queryset = Movie.objects.order_by('-title')
 
     def get_queryset(self):
-        # user = self.request.user
-        # print(user)
-        # rated_movies = Rating.objects.filter(user=user).select_related('movie')
-        # return [rating.movie for rating in rated_movies]
-        return Movie.objects.order_by('-title')
+        queryset = super().get_queryset()
+
+        genre = self.request.GET.get('genre')
+        title = self.request.GET.get('title')
+        min_rating = self.request.GET.get('min_rating')
+
+        # Apply search filters based on the search parameters
+        if genre:
+            queryset = queryset.filter(genres__name=genre)
+        if title:
+            queryset = queryset.filter(title__icontains=title)
+        if min_rating:
+            queryset = queryset.filter(rating__value__gte=min_rating)
+
+        return queryset.order_by('-title')
+        # return Movie.objects.order_by('-title')
+    
 class MovieView(generic.DetailView):
     model = Movie
     template_name = 'userview/movie.html'
+
 class GenreView(generic.DetailView):
     model = Genre
     template_name = 'userview/genre.html'
@@ -163,3 +142,24 @@ def movie_rating(request):
             return redirect("index")
     else:
         return redirect("index")
+    
+
+def search_movies(request):
+    if request.method == 'GET':
+        genre = request.GET.get('genre')
+        title = request.GET.get('title')
+        min_rating = request.GET.get('min_rating')
+
+        # Construct the base queryset for movies
+        movies = Movie.objects.all()
+
+        # Apply filters based on search parameters
+        if genre:
+            movies = movies.filter(genres__name=genre)
+        if title:
+            movies = movies.filter(title__icontains=title)
+        if min_rating:
+            movies = movies.filter(rating__value__gte=min_rating)
+
+        context = {'movies': movies}
+        return render(request, 'index.html', context)

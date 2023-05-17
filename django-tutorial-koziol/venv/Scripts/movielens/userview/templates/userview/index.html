@@ -1,5 +1,13 @@
 {% extends 'userview/header.html' %}
 {% block content %}
+
+    <form class='mb-5 w-50 d-flex flex-column align-items-center mx-auto' action="" method="GET">
+        <input class="form-control mb-3" type="text" name="genre" placeholder="Genre">
+        <input class="form-control mb-3" type="text" name="title" placeholder="Title">
+        <input class="form-control mb-3" type="number" name="min_rating" placeholder="Minimum Rating">
+        <button type="submit" class="btn btn-warning w-25">Search</button>
+    </form>
+
     {% if movies %}
         <div class="list-group">
             {% for movie in movies %}
