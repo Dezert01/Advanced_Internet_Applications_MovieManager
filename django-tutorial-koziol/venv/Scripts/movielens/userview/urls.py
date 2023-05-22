@@ -5,7 +5,8 @@ urlpatterns = [
     # path("", views.index, name="index"),
     # path("genre/<int:genre_id>", views.view_genre, name="index"),
     # path("movie/<int:movie_id>", views.view_movie, name="index"),
-    path("", views.IndexView.as_view(), name="index"),
+    path("", views.index, name="index"),
+    path("search", views.SearchView.as_view(), name="search"),
     path("genre/<int:pk>", views.GenreView.as_view(), name="genre"),
     path("movie/<int:pk>", views.MovieView.as_view(), name="movie"),
     path("register", views.register_request, name="register"),
@@ -13,4 +14,10 @@ urlpatterns = [
     path("logout", views.logout_request, name="logout"),
     path("rated", views.RatedView.as_view(), name="rated"),
     path("search", views.search_movies, name="search_movies"),
+    path('rate_movie/', views.rate_movie, name='rate_movie'),
+    path('add_comment/', views.add_comment, name='add_comment'),
+    path('movie/<int:pk>/edit/', views.MovieEditView.as_view(), name='movie_edit'),
+    path('movie_add', views.movie_add, name='movie_add'),
+    path('movie/<int:movie_id>/add_image/', views.add_image, name='add_image'),
+
 ]

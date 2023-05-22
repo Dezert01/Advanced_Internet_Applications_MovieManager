@@ -1,41 +1,28 @@
 {% extends 'userview/header.html' %}
 {% block content %}
 
-    <form class='mb-5 w-50 d-flex flex-column align-items-center mx-auto' action="" method="GET">
-        <input class="form-control mb-3" type="text" name="genre" placeholder="Genre">
-        <input class="form-control mb-3" type="text" name="title" placeholder="Title">
-        <input class="form-control mb-3" type="number" name="min_rating" placeholder="Minimum Rating">
-        <button type="submit" class="btn btn-warning w-25">Search</button>
-    </form>
+    <div class="container pb-5">
+        <h1>Welcome to our page!</h1>
+        <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Omnis tenetur sed dolores deleniti temporibus nemo maxime reprehenderit provident, saepe officia ratione, fugit repellat iure impedit quibusdam ut reiciendis qui natus animi iusto! Culpa laborum pariatur, vel fuga officia qui. Veritatis distinctio voluptatum, pariatur doloribus inventore alias fuga quam?</p>
 
-    {% if movies %}
-        <div class="list-group">
-            {% for movie in movies %}
-            <a href="/movie/{{movie.id}}" class="list-group-item list-group-item-action">{{ movie.title }}</a>
+        <h2>Top Movies</h2>
+        <div class="row">
+            {% for movie in top_movies %}
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ movie.title }}</h5>
+                        <p class="card-text">Average Rating: {{ movie.avg_rating }}</p>
+                        <a href="{% url 'movie' movie.id %}" class="btn btn-warning">View Details</a>
+                    </div>
+                </div>
+            </div>
             {% endfor %}
         </div>
-    {% else %}
-        <div class="alert alert-primary alert-dismissible fade show" role="alert">
-            <strong>No movies are available.</strong>
-        </div>
-    {% endif %}
-
-    <div class="pagination d-flex align-items-center justify-content-center">
-        <span class="step-links">
-            {% if page_obj.has_previous %}
-                <a href="?page=1">&laquo; first</a>
-                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
-            {% endif %}
-    
-            <span class="current">
-                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-            </span>
-    
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}">next</a>
-                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
-            {% endif %}
-        </span>
+        {% if user.is_authenticated %}
+            <h2>Recommended movies</h2>
+            <p>Soon</p>
+        {% endif %}
     </div>
 
 {% endblock %}

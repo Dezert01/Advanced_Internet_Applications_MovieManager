@@ -1,41 +1,81 @@
 {% extends 'userview/header.html' %}
 {% block content %}
-{% if user.is_authenticated %}
-        {% if movies %}
-        <div class="list-group">
-            {% for movie in movies %}
-                <a href='{% url "movie" movie.id %}' class="list-group-item list-group-item-action">{{ movie.title }}</a>
-            {% endfor %}
-        </div>
+    <div class="container">
+        {% if user.is_authenticated %}
+
+            {% if movies %}
+                <div class="d-flex justify-content-end mb-3">
+                    <div class="btn-group" role="group" aria-label="View Toggle">
+                        <button type="button" class="btn btn-warning active" id="list-view-btn">List View</button>
+                        <button type="button" class="btn btn-warning" id="cards-view-btn">Cards View</button>
+                    </div>
+                </div>
+                <div class="list-group" id="movies-list">
+                    {% for movie in movies %}
+                    <a href="/movie/{{movie.id}}" class="list-group-item list-group-item-action">{{ movie.title }}</a>
+                    {% endfor %}
+                </div>
+                <div class="card-deck d-none" id="movies-cards">
+                    {% for movie in movies %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div>
+                                <h3 class="card-title">{{ movie.title }}</h5>
+                                <a class='fs-5 text-warning' href="{{ movie.imdb_link }}" target="_blank">imdb.com</a>
+                            </div>
+                            {% for genre in movie.genres.all %}
+                                <span class="badge bg-warning">{{ genre.name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="pagination d-flex align-items-center justify-content-center">
+                    <span class="step-links">
+                        {% if page_obj.has_previous %}
+                            <a href="?page=1">&laquo; first</a>
+                            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                        {% endif %}
+                
+                        <span class="current">
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                        </span>
+                
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}">next</a>
+                            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                        {% endif %}
+                    </span>
+                </div>
+            {% else %}
+                <div class="alert alert-primary alert-dismissible fade show" role="alert">
+                    <strong>No movies are available. wtf</strong>
+                </div>
+            {% endif %}
+
         {% else %}
-        <div class="alert alert-primary alert-dismissible fade show" role="alert">
-            <strong>No movies are available. wtf</strong>
-        </div>
+            <div class="justify-content-center d-flex flex-column align-items-center mx-auto mt-3">
+                <p class="">Login to see the content.</p>
+                <p>If you don't have an account, crate new one</p>
+            </div>
         {% endif %}
-
-        <div class="pagination d-flex align-items-center justify-content-center">
-            <span class="step-links">
-                {% if page_obj.has_previous %}
-                    <a href="?page=1">&laquo; first</a>
-                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
-                {% endif %}
-        
-                <span class="current">
-                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-                </span>
-        
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}">next</a>
-                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
-                {% endif %}
-            </span>
-        </div>
-
-    {% else %}
-        <div class="justify-content-center d-flex flex-column align-items-center mx-auto mt-3">
-            <p class="">Login to see the content.</p>
-            <p>If you don't have an account, crate new one</p>
-        </div>
-{% endif %}
+    </div>
+    
+    <script>
+        // JavaScript code to toggle between list view and cards view
+        document.getElementById("list-view-btn").addEventListener("click", function() {
+            document.getElementById("movies-list").classList.remove("d-none");
+            document.getElementById("movies-cards").classList.add("d-none");
+            this.classList.add("active");
+            document.getElementById("cards-view-btn").classList.remove("active");
+        });
+    
+        document.getElementById("cards-view-btn").addEventListener("click", function() {
+            document.getElementById("movies-list").classList.add("d-none");
+            document.getElementById("movies-cards").classList.remove("d-none");
+            this.classList.add("active");
+            document.getElementById("list-view-btn").classList.remove("active");
+        });
+    </script>
 {% endblock %}
 

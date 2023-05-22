@@ -17,10 +17,12 @@
   <header class="p-1 mb-2 bg-dark">
     <nav class="nav justify-content-center  ">
         <a class="nav-link text-warning" href="/">Home</a>
+        <a class="nav-link text-warning" href="/search">Search</a>
         {% if user.is_authenticated %}
             <a class="nav-link text-warning" href="/rated">Rated by you<a>
             {% if user.is_superuser %}
-                <a class="nav-link text-warning" href="/admin">Admin panel<a>
+              <a class="nav-link text-warning" href="/movie_add">Add new movie<a>
+                <a class="nav-link text-warning" href="/admin" target="_blank">Admin panel<a>
             {% endif %}
             <a class="nav-link text-danger" href="/logout">Logout</a>
         {% else %}

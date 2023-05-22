@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
+from .models import Movie, Genre, Image
 
 class NewUserForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -15,4 +16,17 @@ class NewUserForm(UserCreationForm):
 
         if commit:
             user.save()
-        return user
+        return user 
+
+class MovieForm(forms.ModelForm):
+    class Meta:
+        model = Movie
+        fields = ['title', 'imdb_link', 'genres']
+        widgets = {
+            'genres': forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
+        }
+
+class ImageForm(forms.ModelForm):
+    class Meta:
+        model = Image
+        fields = ['image']

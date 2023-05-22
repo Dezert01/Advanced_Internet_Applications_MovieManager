@@ -5,8 +5,8 @@
 {% load crispy_forms_tags %}
 
 
-{% if user.is_authenticated %}
-    <div class="container py-5">
+<div class="container py-5">
+    {% if user.is_authenticated %}
         <p>User already logged in. Logout to change account.</p>
         <form method="post" action="{% url 'logout' %}">
             {% csrf_token %}
@@ -14,14 +14,14 @@
                 Logout
             </button>
         </form>
-{% else %}
+    {% else %}
         <h1>Login</h1>
         <form method="POST">
             {% csrf_token %}
             {{ login_form|crispy }}
-            <button class="btn btn-primary" type="submit">Login</button>
+            <button class="btn btn-warning" type="submit">Login</button>
         </form>
-        <p class='text-center'>If you don't have an account, <a href='/register'>Sign up</a></p>
+        <p class='text-center'>If you don't have an account, <a class='text-warning' href='/register'>Sign up</a></p>
         
         {% if messages %}
             <ul class="messages">
@@ -31,8 +31,8 @@
             </ul>
         {% endif %}
 
-    </div>
+    {% endif %}
+</div>
 
-{% endif %}
 
 {% endblock %}

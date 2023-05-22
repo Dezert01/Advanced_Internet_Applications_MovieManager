@@ -10,6 +10,7 @@ class Genre(models.Model):
 class Movie(models.Model):
     title = models.CharField(max_length=1000)
     genres = models.ManyToManyField(Genre)
+    imdb_link = models.URLField(blank=True, null=True)
 
     def __str__(self):
         return self.title
@@ -34,4 +35,4 @@ class Image(models.Model):
     image = models.ImageField(upload_to='movie_images/')
 
     def __str__(self):
-        return f"Image for {self.movie.title}"
+        return f"Image {self.image.name} for {self.movie.title}"

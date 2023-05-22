@@ -1,14 +1,23 @@
 from django.views import generic
-from .models import Movie, Genre, Rating
+from .models import Movie, Genre, Rating, Comment
 from django.contrib.auth import login, logout, authenticate
-from .forms import NewUserForm
+from .forms import NewUserForm, MovieForm, ImageForm
 from django.shortcuts import render
+from django.db.models import Avg
 from django.contrib import messages
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
+from django.urls import reverse_lazy
 
-class IndexView(generic.ListView):
-    template_name = 'userview/index.html'
+def index(request):
+    top_movies = Movie.objects.annotate(avg_rating=Avg('rating__value')).order_by('-avg_rating')[:3]
+    context = {
+        'top_movies': top_movies
+    }
+    return render(request, 'userview/index.html', context)
+
+class SearchView(generic.ListView):
+    template_name = 'userview/search.html'
     context_object_name = 'movies'
     paginate_by = 10
     queryset = Movie.objects.order_by('-title')
@@ -34,6 +43,20 @@ class IndexView(generic.ListView):
 class MovieView(generic.DetailView):
     model = Movie
     template_name = 'userview/movie.html'
+    context_object_name = 'movie'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user'] = self.request.user
+
+        if self.request.user.is_authenticated:
+            context['user_rating'] = self.object.rating_set.filter(user=self.request.user).first()
+        else:
+            context['user_rating'] = None
+
+        context['image_form'] = ImageForm()
+
+        return context
 
 class GenreView(generic.DetailView):
     model = Genre
@@ -101,47 +124,6 @@ def login_request(request):
 def logout_request(request):
     logout(request)
     return redirect("login")
-
-
-def movie_rating(request):
-    # print(request.movie_id)
-    if request.user.is_authenticated:
-        print('1')
-        if request.method == "POST":
-            print(2)
-            ratings = Rating.objects.filter(user=request.user)
-            movies = [rating.movie for rating in ratings]
-
-            movie_id = request.POST["movie_id"]
-            rating_value = int(request.POST['rating_value'])
-            movie = get_object_or_404(Movie, id=movie_id)
-
-            # Create or update the rating object
-            rating, created = Rating.objects.update_or_create(
-                user=request.user,
-                movie=movie,
-                defaults={'value': rating_value}
-            )
-
-            # Set a message based on whether the rating was added or updated
-            if created:
-                message = 'Rating added successfully.'
-            else:
-                message = 'Rating updated successfully.'
-
-            return redirect("index")
-        else:
-            print(3)
-            message = ''
-
-            # Render the template with the list of movies and a message (if any)
-            # context = {
-            #     'movies': movies,
-            #     'message': message,
-            # }
-            return redirect("index")
-    else:
-        return redirect("index")
     
 
 def search_movies(request):
@@ -163,3 +145,74 @@ def search_movies(request):
 
         context = {'movies': movies}
         return render(request, 'index.html', context)
+
+def rate_movie(request):
+    if request.method == 'POST':
+        movie_id = request.POST.get('movie_id')
+        rating_value = request.POST.get('rating_value')
+        movie = get_object_or_404(Movie, pk=movie_id)
+        user = request.user
+
+        # Check if the user has already rated the movie
+        rating = Rating.objects.filter(movie=movie, user=user).first()
+
+        if rating:
+            # If the user has already rated the movie, update the rating value
+            rating.value = rating_value
+            rating.save()
+        else:
+            # If the user has not rated the movie, create a new rating instance
+            rating = Rating.objects.create(movie=movie, user=user, value=rating_value)
+
+        return redirect('movie', pk=movie_id)
+
+    return redirect('movie', pk=movie_id)
+
+def add_comment(request):
+    if request.method == 'POST':
+        movie_id = request.POST.get('movie_id')
+        content = request.POST.get('content')
+        movie = get_object_or_404(Movie, pk=movie_id)
+        Comment.objects.create(content=content, movie=movie, user=request.user)
+        return redirect('movie', pk=movie_id)
+
+    return redirect('movie', pk=movie_id)
+
+class MovieEditView(generic.UpdateView):
+    model = Movie
+    template_name = 'userview/movie_edit.html'
+    fields = ['title', 'genres']
+
+    def test_func(self):
+        return self.request.user.is_superuser
+    
+    def get_success_url(self):
+        return reverse_lazy('movie', kwargs={'pk': self.object.pk})
+    
+def movie_add(request):
+    if request.method == 'POST':
+        form = MovieForm(request.POST)
+        if form.is_valid():
+            movie = form.save()
+            return redirect('movie', pk=movie.pk)
+    else:
+        form = MovieForm()
+        genres = Genre.objects.all()
+
+    
+    return render(request, 'userview/movie_add.html', {'form': form, 'genres': genres})
+
+def add_image(request, movie_id):
+    movie = get_object_or_404(Movie, pk=movie_id)
+    
+    if request.method == 'POST':
+        form = ImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            image = form.save(commit=False)
+            image.movie = movie
+            image.save()
+            return redirect('movie', pk=movie_id)
+    else:
+        form = ImageForm()
+    
+    return render(request, 'userview/add_image.html', {'form': form, 'movie': movie})
