@@ -23,17 +23,19 @@
             </div>
             <div class="card-deck d-none" id="movies-cards">
                 {% for movie in movies %}
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div>
-                            <h3 class="card-title">{{ movie.title }}</h5>
-                            <a class='fs-5 text-warning' href="{{ movie.imdb_link }}" target="_blank">imdb.com</a>
+                <a class="text-black text-decoration-none" href="/movie/{{movie.id}}">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div>
+                                <h3 class="card-title">{{ movie.title }}</h5>
+                                <a class='fs-5 text-warning' href="{{ movie.imdb_link }}" target="_blank">imdb.com</a>
+                            </div>
+                            {% for genre in movie.genres.all %}
+                                <span class="badge bg-warning">{{ genre.name }}</span>
+                            {% endfor %}
                         </div>
-                        {% for genre in movie.genres.all %}
-                            <span class="badge bg-warning">{{ genre.name }}</span>
-                        {% endfor %}
                     </div>
-                </div>
+                </a>
                 {% endfor %}
             </div>
         {% else %}

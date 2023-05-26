@@ -20,9 +20,25 @@
             {% endfor %}
         </div>
         {% if user.is_authenticated %}
-            <h2>Recommended movies</h2>
-            <p>Soon</p>
-        {% endif %}
+        <h2>Movies you may like</h2>
+            {% if similar_movies %}
+                <div class="row">
+                    {% for movie in similar_movies %}
+                        <div class="col-md-4">
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ movie.title }}</h5>
+                                    <p class="card-text">Average Rating: {{ movie.avg_rating }}</p>
+                                    <a href="{% url 'movie' movie.id %}" class="btn btn-warning">View Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No similar movies found.</p>
+            {% endif %}
+    {% endif %}
     </div>
 
 {% endblock %}

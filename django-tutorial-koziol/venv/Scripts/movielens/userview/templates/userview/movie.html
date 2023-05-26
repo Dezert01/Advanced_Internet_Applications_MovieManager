@@ -4,7 +4,7 @@
     {% if movie %}
         <div class="container pb-5">
             {% if movie.title %}
-            <span class="fs-1 fw-bold">{{ movie.title }}</span>
+            <span class="fs-1 fw-bold">{{ movie.title }} ({{ movie.year }})</span>
             {% endif %}
             {% if movie.imdb_link %}
                 <a class='fs-5 text-warning' href="{{ movie.imdb_link }}" target="_blank">imdb.com</a>
@@ -13,6 +13,8 @@
             {% for genre in movie.genres.all %}
                 <span class="badge bg-warning">{{ genre.name }}</span>
             {% endfor %}
+            <h5 class="mt-2 mb-0">Directed by:</h5>
+            <p>{{ movie.director }}</p>
             <h5 class="mt-2 mb-0">Rating</h5>
             <p>{{ movie.average_rating }}/5</p>
              
@@ -45,15 +47,13 @@
                 </form>
             {% endif %}
 
-            {% if movie.images.all %}
+            {% if movie.image %}
                 <h5 class="mt-2">Gallery</h5>
                 <div id="movie-gallery" class="carousel slide mb-5" data-bs-ride="carousel">
                     <div class="carousel-inner">
-                        {% for image in movie.images.all %}
-                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                            <img src="{{ image.image.url }}" class="d-block w-100" alt="Movie Image">
+                        <div class="carousel-item active">
+                            <img src="{{ movie.image }}" class="d-block w-100" alt="Movie Image">
                         </div>
-                        {% endfor %}
                     </div>
                     <button class="carousel-control-prev" type="button" data-bs-target="#movie-gallery" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>

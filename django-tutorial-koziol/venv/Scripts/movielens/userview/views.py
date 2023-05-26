@@ -1,18 +1,29 @@
 from django.views import generic
 from .models import Movie, Genre, Rating, Comment
 from django.contrib.auth import login, logout, authenticate
-from .forms import NewUserForm, MovieForm, ImageForm
+from .forms import NewUserForm, MovieForm
 from django.shortcuts import render
 from django.db.models import Avg
 from django.contrib import messages
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
 from django.urls import reverse_lazy
+from random import choice
 
 def index(request):
     top_movies = Movie.objects.annotate(avg_rating=Avg('rating__value')).order_by('-avg_rating')[:3]
+    
+    similar_movies = []
+    if request.user.is_authenticated:
+        rated_movies = Rating.objects.filter(user=request.user).values_list('movie', flat=True)
+        if rated_movies:
+            random_movie_id = choice(rated_movies)
+            random_movie = Movie.objects.get(id=random_movie_id)
+            similar_movies = random_movie.get_similar_movies()
+
     context = {
-        'top_movies': top_movies
+        'top_movies': top_movies,
+        'similar_movies': similar_movies
     }
     return render(request, 'userview/index.html', context)
 
@@ -54,7 +65,7 @@ class MovieView(generic.DetailView):
         else:
             context['user_rating'] = None
 
-        context['image_form'] = ImageForm()
+        # context['image_form'] = ImageForm()
 
         return context
 
