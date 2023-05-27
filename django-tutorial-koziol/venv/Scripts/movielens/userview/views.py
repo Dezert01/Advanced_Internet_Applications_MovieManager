@@ -1,9 +1,9 @@
 from django.views import generic
 from .models import Movie, Genre, Rating, Comment
 from django.contrib.auth import login, logout, authenticate
-from .forms import NewUserForm, MovieForm
+from .forms import NewUserForm, MovieForm, ImageForm
 from django.shortcuts import render
-from django.db.models import Avg
+from django.db.models import Avg, Max
 from django.contrib import messages
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
@@ -11,11 +11,20 @@ from django.urls import reverse_lazy
 from random import choice
 
 def index(request):
-    top_movies = Movie.objects.annotate(avg_rating=Avg('rating__value')).order_by('-avg_rating')[:3]
+    
+    recently_rated_movies = Movie.objects.annotate(
+        latest_rating=Max('rating__timestamp')
+    ).order_by('-latest_rating')[:20]
+
+    recently_rated_movie_ids = [movie.id for movie in recently_rated_movies]
+
+    top_movies = Movie.objects.filter(id__in=recently_rated_movie_ids).annotate(
+        avg_rating=Avg('rating__value')
+    ).order_by('-avg_rating')[:3]
     
     similar_movies = []
     if request.user.is_authenticated:
-        rated_movies = Rating.objects.filter(user=request.user).values_list('movie', flat=True)
+        rated_movies = Rating.objects.filter(user=request.user, value__gte=4.0).values_list('movie', flat=True)
         if rated_movies:
             random_movie_id = choice(rated_movies)
             random_movie = Movie.objects.get(id=random_movie_id)
@@ -65,7 +74,7 @@ class MovieView(generic.DetailView):
         else:
             context['user_rating'] = None
 
-        # context['image_form'] = ImageForm()
+        context['image_form'] = ImageForm()
 
         return context
 
@@ -209,7 +218,6 @@ def movie_add(request):
     else:
         form = MovieForm()
         genres = Genre.objects.all()
-
     
     return render(request, 'userview/movie_add.html', {'form': form, 'genres': genres})
 
@@ -217,13 +225,11 @@ def add_image(request, movie_id):
     movie = get_object_or_404(Movie, pk=movie_id)
     
     if request.method == 'POST':
-        form = ImageForm(request.POST, request.FILES)
+        form = ImageForm(request.POST, request.FILES, instance=movie)
         if form.is_valid():
-            image = form.save(commit=False)
-            image.movie = movie
-            image.save()
+            form.save()
             return redirect('movie', pk=movie_id)
     else:
-        form = ImageForm()
+        form = ImageForm(instance=movie)
     
-    return render(request, 'userview/add_image.html', {'form': form, 'movie': movie})
+    return render(request, 'add_image.html', {'form': form, 'movie': movie})

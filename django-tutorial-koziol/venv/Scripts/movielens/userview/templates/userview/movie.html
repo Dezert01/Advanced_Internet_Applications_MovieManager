@@ -52,7 +52,7 @@
                 <div id="movie-gallery" class="carousel slide mb-5" data-bs-ride="carousel">
                     <div class="carousel-inner">
                         <div class="carousel-item active">
-                            <img src="{{ movie.image }}" class="d-block w-100" alt="Movie Image">
+                            <img src="{{ movie.image.url }}" class="d-block w-100" alt="Movie Image">
                         </div>
                     </div>
                     <button class="carousel-control-prev" type="button" data-bs-target="#movie-gallery" data-bs-slide="prev">
@@ -70,7 +70,13 @@
                 <form class='border rounded border-warning p-2 mb-2' method="post" action="{% url 'add_image' movie.id %}" enctype="multipart/form-data">
                     {% csrf_token %}
                     {{ image_form.as_p }}
-                    <button class='btn btn-warning' type="submit">Add Image</button>
+                    <button class='btn btn-warning' type="submit">
+                        {% if movie.image %}
+                            Update Image
+                        {% else %}
+                            Add Image
+                        {% endif %}
+                    </button>
                 </form>
             {% endif %}
 

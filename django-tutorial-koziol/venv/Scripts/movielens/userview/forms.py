@@ -26,7 +26,18 @@ class MovieForm(forms.ModelForm):
             'genres': forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
         }
 
-# class ImageForm(forms.ModelForm):
-#     class Meta:
-#         model = Image
-#         fields = ['image']
+class ImageForm(forms.ModelForm):
+    class Meta:
+        model = Movie
+        fields = ['image']
+        labels = {'image': 'Movie Image'}
+        widgets = {'image': forms.FileInput(attrs={'accept': 'image/*'})}
+    
+    def clean_image(self):
+        image = self.cleaned_data.get('image')
+        if image:
+            if self.instance.image:
+                self.instance.image.delete()
+        return image
+
+    

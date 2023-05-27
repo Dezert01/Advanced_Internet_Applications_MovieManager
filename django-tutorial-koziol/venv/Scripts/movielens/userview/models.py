@@ -41,6 +41,7 @@ class Rating(models.Model):
     value = models.IntegerField()
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(default=now, editable=False)
     def __str__(self):
         return f"{self.movie.title}, {self.user.username} ({self.value})"
     
