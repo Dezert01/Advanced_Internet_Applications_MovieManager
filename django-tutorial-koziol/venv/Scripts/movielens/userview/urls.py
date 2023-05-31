@@ -19,5 +19,6 @@ urlpatterns = [
     path('movie/<int:pk>/edit/', views.MovieEditView.as_view(), name='movie_edit'),
     path('movie_add', views.movie_add, name='movie_add'),
     path('movie/<int:movie_id>/add_image/', views.add_image, name='add_image'),
-
+    path('video', views.video.as_view(), name='video'),
+    path("videopage/<int:pk>", views.VideoPage.as_view(), name="videopage"),
 ]

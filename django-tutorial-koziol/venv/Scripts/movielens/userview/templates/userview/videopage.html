@@ -1,0 +1,18 @@
+{% extends "userview/header.html" %}
+{% load embed_video_tags %}
+{% block content %}
+    {% if video %}
+        <div class="container pb-5">
+            <h1>
+               {{ video.title }}
+            </h1>
+            <h5>
+                {{ video.description }}
+            </h5>
+            {% video video.video as this_video %}
+                {% video this_video %}
+            {% endvideo %}
+        </div>
+    {% endif %}
+    
+{% endblock %}

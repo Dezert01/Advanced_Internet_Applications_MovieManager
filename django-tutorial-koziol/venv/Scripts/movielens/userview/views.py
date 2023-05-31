@@ -1,5 +1,5 @@
 from django.views import generic
-from .models import Movie, Genre, Rating, Comment
+from .models import Movie, Genre, Rating, Comment, EmbeddedVideoItem
 from django.contrib.auth import login, logout, authenticate
 from .forms import NewUserForm, MovieForm, ImageForm
 from django.shortcuts import render
@@ -233,3 +233,20 @@ def add_image(request, movie_id):
         form = ImageForm(instance=movie)
     
     return render(request, 'add_image.html', {'form': form, 'movie': movie})
+
+class video(generic.ListView):
+    template_name = 'userview/video.html'
+    context_object_name = 'videos'
+    paginate_by = 1
+    queryset = EmbeddedVideoItem.objects.order_by('-title')
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        return queryset.order_by('-title')
+
+class VideoPage(generic.DetailView):
+    model = EmbeddedVideoItem
+    template_name = 'userview/videopage.html'
+    context_object_name = 'video'
+    

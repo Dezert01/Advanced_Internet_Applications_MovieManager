@@ -1,0 +1,65 @@
+{% extends 'userview/header.html' %}
+{% load embed_video_tags %}
+{% block content %}
+    <div class="container pb-5">
+        <!-- <h1>
+            iFrame tag
+        </h1>
+        <iframe 
+            width="1237" 
+            height="696" 
+            src="https://www.youtube.com/embed/Ki_0iES2cGI" 
+            title="LearnHTMLvideoin2minutes 🎥 " 
+            frameborder="500" 
+            allow="accelerometer; 
+                    autoplay; 
+                    clipboard-write; 
+                    encrypted-media;    
+                    gyroscope; 
+                    picture-in-picture; 
+                    web-share" 
+            allowfullscreen> </iframe>
+        <h1>
+            Video Tag
+        </h1>
+        <video controls autoplay muted> 
+            <source src="/media/file_example_MP4_480_1_5MG.mp4" type="video/mp4" /> 
+            Your browser does not support the video tag. 
+        </video> -->
+        <h1>
+            Embedded Videos
+        </h1>
+        <div class="card-deck mb-3 gap-3" >
+            {% for item in videos %}
+                {% video item.video as this_video %}
+                    <div class="card" style="width: 18rem;">
+                        <img src="{{ this_video.thumbnail }}" class="card-img-top">
+                        <div class="card-body">
+                            <div>
+                                <h3 class="card-title">{{ item.title }}</h5>
+                                <a class='fs-5 text-warning' href="videopage/{{ item.id }}">Link</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endvideo %}
+            {% endfor %}
+        </div>
+        <div class="pagination d-flex align-items-center justify-content-center">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+        
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+        
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+{% endblock %}

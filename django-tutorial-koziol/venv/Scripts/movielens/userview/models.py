@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.db.models import Avg
 from django.utils.timezone import now
+from embed_video.fields import EmbedVideoField
 
 class Genre(models.Model):
     name = models.CharField(max_length=300)
@@ -32,8 +33,11 @@ class Movie(models.Model):
             other_genres = movie.genres.all()
             shared_genres = movie_genres.intersection(other_genres)
 
+            movie.avg_rating = movie.average_rating() 
             if len(shared_genres) >= len(movie_genres) / 2:
-                similar_movies.append(movie)
+                if movie.avg_rating:
+                    if movie.avg_rating > 3: 
+                        similar_movies.append(movie)
 
         return similar_movies
 
@@ -61,3 +65,11 @@ class Comment(models.Model):
 
 #     def __str__(self):
 #         return f"Image {self.image.name} for {self.movie.title}"
+
+
+class EmbeddedVideoItem(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.CharField(max_length=1000)
+    video = EmbedVideoField()
+    class Meta:
+        ordering = ['title']
